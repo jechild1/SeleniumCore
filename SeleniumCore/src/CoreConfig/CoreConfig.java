@@ -1,5 +1,6 @@
 package CoreConfig;
 
+import java.time.Duration;
 import java.util.HashMap;
 
 import org.openqa.selenium.WebDriver;
@@ -8,6 +9,7 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
+import org.openqa.selenium.support.PageFactory;
 import org.testng.ITestContext;
 import org.testng.Reporter;
 
@@ -23,6 +25,8 @@ public abstract class CoreConfig {
 
 	// Project URL
 	private static String BASE_URL = ""; // Usually, project specific and will override this in lower level project.
+
+	private static int NORMAL_TIMEOUT = 20;
 
 	protected static WebDriver driver;
 
@@ -49,12 +53,15 @@ public abstract class CoreConfig {
 	public void loadPage() {
 		driver = this.setDriver();
 		launchAndConfigureBrowser(driver);
+
+		PageFactory.initElements(driver, this);
 	}
 
 	private void launchAndConfigureBrowser(WebDriver driver) {
 		// Softer Asserter can go here
 		// Timeout can go here
 		setBrowserProperties(driver);
+		setTimeout(driver, NORMAL_TIMEOUT);
 		loadPage(driver);
 	}
 
@@ -118,6 +125,17 @@ public abstract class CoreConfig {
 			driver = new FirefoxDriver();
 		}
 		return driver;
+	}
+
+	/**
+	 * Sets the length of time before timing out when looking for an object on the
+	 * page. This method uses seconds.
+	 * 
+	 * @param driver
+	 * @param timeOutLengthInSeconds
+	 */
+	protected static void setTimeout(WebDriver driver, int timeOutLengthInSeconds) {
+		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(timeOutLengthInSeconds));
 	}
 
 	/**
