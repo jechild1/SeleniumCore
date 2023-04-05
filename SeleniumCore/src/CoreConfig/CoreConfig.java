@@ -1,5 +1,7 @@
 package CoreConfig;
 
+import org.openqa.selenium.WebDriver;
+
 /**
  * Class containing methods to set up browser type and configuration.
  * 
