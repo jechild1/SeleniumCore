@@ -3,6 +3,7 @@ package CoreConfig;
 import java.time.Duration;
 import java.util.HashMap;
 
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -14,6 +15,7 @@ import org.testng.ITestContext;
 import org.testng.Reporter;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import utilities.AutomationHelper;
 
 /**
  * Class containing methods to set up browser types and configurations
@@ -26,7 +28,7 @@ public abstract class CoreConfig {
 	// Project URL
 	private static String BASE_URL = ""; // Usually, project specific and will override this in lower level project.
 
-	private static int NORMAL_TIMEOUT = 20;
+	protected static int NORMAL_TIMEOUT = 20;
 
 	protected static WebDriver driver;
 
@@ -152,6 +154,39 @@ public abstract class CoreConfig {
 				testContext.getCurrentXmlTest().getAllParameters());
 		return parameters.get("selectedBrowser");
 
+	}
+	
+	/**
+	 * Waits for a given page to be fully loaded.
+	 */
+	public void waitForPageToLoad() {
+		Reporter.log("Waiting for page to load completely...", true);
+		
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		
+		boolean initiallyLoaded = false;
+		
+		//Perform an initial check for the page to be loaded.
+		if(js.executeScript("return document.readyState").toString().equals("complete")){
+			
+			Reporter.log("The page '" + AutomationHelper.getPageTitle() + "' is fully loaded now.", true);
+			
+			initiallyLoaded = true;
+		}
+		
+		if(!initiallyLoaded) {
+			for(int i =0; i < NORMAL_TIMEOUT; i++) {
+				AutomationHelper.waitSeconds(1);
+				
+				if(js.executeScript("return.document.readystate").toString().equals("complete")) {
+					Reporter.log("The page '" + AutomationHelper.getPageTitle() + "' is fully loaded now. /n"
+							+ "It took " + i + " seconds to load.", true);
+					break;
+					
+				}
+			}
+		}
+			
 	}
 
 }
