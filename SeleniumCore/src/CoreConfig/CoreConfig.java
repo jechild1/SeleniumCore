@@ -97,7 +97,7 @@ public abstract class CoreConfig {
 		String selectedBrowser = getSelectedBrowser();
 
 		// Default browser in string if not user selected from xml test suite file.
-		selectedBrowser = selectedBrowser != null ? selectedBrowser : "Chrome";
+		selectedBrowser = selectedBrowser != null ? selectedBrowser : "Firefox";
 
 		// Switch statement to go through each browser and set properties, if need be.
 		// See archived core classes for options, if need be.
