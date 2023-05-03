@@ -41,8 +41,6 @@ public class AutomationHelper extends CoreConfig {
 		String methodName = e.getMethodName();
 
 		Reporter.log("Method: " + methodName, true);
-		// New line
-		Reporter.log("", true);
 	}
 
 	/**

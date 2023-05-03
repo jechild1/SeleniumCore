@@ -11,6 +11,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.ITestContext;
 import org.testng.Reporter;
 
@@ -57,6 +58,7 @@ public abstract class CoreConfig {
 		launchAndConfigureBrowser(driver);
 
 		PageFactory.initElements(driver, this);
+		waitForPageToLoad();
 	}
 
 	private void launchAndConfigureBrowser(WebDriver driver) {
@@ -155,38 +157,42 @@ public abstract class CoreConfig {
 		return parameters.get("selectedBrowser");
 
 	}
-	
+
 	/**
 	 * Waits for a given page to be fully loaded.
 	 */
 	public void waitForPageToLoad() {
 		Reporter.log("Waiting for page to load completely...", true);
-		
+
 		JavascriptExecutor js = (JavascriptExecutor) driver;
-		
+
 		boolean initiallyLoaded = false;
-		
-		//Perform an initial check for the page to be loaded.
-		if(js.executeScript("return document.readyState").toString().equals("complete")){
-			
+
+		// Perform an initial check for the page to be loaded.
+		if (js.executeScript("return document.readyState").toString().equals("complete")) {
+
 			Reporter.log("The page '" + AutomationHelper.getPageTitle() + "' is fully loaded now.", true);
-			
+
 			initiallyLoaded = true;
 		}
-		
-		if(!initiallyLoaded) {
-			for(int i =0; i < NORMAL_TIMEOUT; i++) {
+
+		if (!initiallyLoaded) {
+			for (int i = 0; i < NORMAL_TIMEOUT; i++) {
 				AutomationHelper.waitSeconds(1);
-				
-				if(js.executeScript("return.document.readystate").toString().equals("complete")) {
+
+				if (js.executeScript("return.document.readystate").toString().equals("complete")) {
 					Reporter.log("The page '" + AutomationHelper.getPageTitle() + "' is fully loaded now. /n"
 							+ "It took " + i + " seconds to load.", true);
+
+//TODO - This needs a second look because it prints an empty string
+					Reporter.log("The page '" + driver.getCurrentUrl() + "' is fully loaded now. /n" + "It took " + i
+							+ " seconds to load.", true);
 					break;
-					
+
 				}
 			}
 		}
-			
+
 	}
 
 }
