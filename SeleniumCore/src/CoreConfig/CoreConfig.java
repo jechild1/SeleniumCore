@@ -29,6 +29,7 @@ public abstract class CoreConfig {
 	// Project URL
 	private static String BASE_URL = ""; // Usually, project specific and will override this in lower level project.
 
+	protected static int SHORT_TIMEOUT = 3;
 	protected static int NORMAL_TIMEOUT = 20;
 
 	protected static WebDriver driver;
@@ -57,8 +58,12 @@ public abstract class CoreConfig {
 		driver = this.setDriver();
 		launchAndConfigureBrowser(driver);
 
-		PageFactory.initElements(driver, this);
 		waitForPageToLoad();
+		
+		//TODO - Remove this after AS-182 is corrected.
+		AutomationHelper.waitSeconds(3);
+		
+		PageFactory.initElements(driver, this);
 	}
 
 	private void launchAndConfigureBrowser(WebDriver driver) {
