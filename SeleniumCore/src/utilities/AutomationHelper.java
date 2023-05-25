@@ -109,7 +109,7 @@ public class AutomationHelper extends CoreConfig {
 	 * Method to cause the script to pause for a given amount of time, as indicated
 	 * by the passed in parameter.
 	 * 
-	 * @param timeInSeconds
+	 * @paramtimeInSeconds
 	 */
 	public static void waitSeconds(int timeInSeconds) {
 		// Convert to milliseconds
@@ -117,6 +117,24 @@ public class AutomationHelper extends CoreConfig {
 
 		try {
 			Thread.sleep(timeInSeconds);
+
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Method to cause the script to pause for a given amount of time, as indicated
+	 * by the passed in parameter.
+	 * 
+	 * @paramtimeInMilliSeconds
+	 */
+	public static void waitMillis(int timeInMilliSeconds) {
+		// Convert to milliseconds
+//		timeInSeconds = timeInSeconds * 1000;
+
+		try {
+			Thread.sleep(timeInMilliSeconds);
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
