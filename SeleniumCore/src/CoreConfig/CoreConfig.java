@@ -7,11 +7,11 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.ITestContext;
 import org.testng.Reporter;
 
@@ -61,7 +61,7 @@ public abstract class CoreConfig {
 		waitForPageToLoad();
 		
 		//TODO - Remove this after AS-182 is corrected.
-		AutomationHelper.waitSeconds(3);
+//		AutomationHelper.waitSeconds(3);
 		
 		PageFactory.initElements(driver, this);
 	}
@@ -80,7 +80,7 @@ public abstract class CoreConfig {
 	 * @param driver
 	 */
 	private static void loadPage(WebDriver driver) {
-		driver.get(BASE_URL);
+		driver.get(BASE_URL + "login");
 	}
 
 	/**
@@ -104,7 +104,7 @@ public abstract class CoreConfig {
 		String selectedBrowser = getSelectedBrowser();
 
 		// Default browser in string if not user selected from xml test suite file.
-		selectedBrowser = selectedBrowser != null ? selectedBrowser : "Firefox";
+		selectedBrowser = selectedBrowser != null ? selectedBrowser : "chrome";
 
 		// Switch statement to go through each browser and set properties, if need be.
 		// See archived core classes for options, if need be.
@@ -119,8 +119,23 @@ public abstract class CoreConfig {
 			break;
 
 		case "edge":
+			
+			
+			HashMap<String, Object> edgePrefs = new HashMap<String, Object>();
+			edgePrefs.put("profile.default_content_settings.popups", 0);
+			edgePrefs.put("profile.default_content_setting_values.notifications", 2);		
+			edgePrefs.put("profile.default_content_setting_values.automatic_downloads" , 1);		
+			edgePrefs.put("profile.content_settings.pattern_pairs.*,*.multiple-automatic-downloads",1);
+			EdgeOptions egdeOptions = new EdgeOptions();
+			egdeOptions.setExperimentalOption("prefs",edgePrefs);
+			
+			
+			
+			
+			
+			
 			WebDriverManager.edgedriver().setup();
-			driver = new EdgeDriver();
+			driver = new EdgeDriver(egdeOptions);
 			break;
 
 		case "chrome":
@@ -129,6 +144,9 @@ public abstract class CoreConfig {
 			break;
 
 		case "firefox":
+			WebDriverManager.firefoxdriver().setup();
+			driver = new FirefoxDriver();
+			
 		default:
 			WebDriverManager.firefoxdriver().setup();
 			driver = new FirefoxDriver();
