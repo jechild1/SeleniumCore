@@ -29,8 +29,10 @@ public abstract class CoreConfig {
 	// Project URL
 	private static String BASE_URL = ""; // Usually, project specific and will override this in lower level project.
 
+	protected static long MICRO_TIMEOUT_MILLIS = 100;
 	protected static int SHORT_TIMEOUT = 3;
 	protected static int NORMAL_TIMEOUT = 20;
+	protected static int LONG_TIMEOUT = 50;
 
 	protected static WebDriver driver;
 
@@ -163,6 +165,17 @@ public abstract class CoreConfig {
 	 */
 	protected static void setTimeout(WebDriver driver, int timeOutLengthInSeconds) {
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(timeOutLengthInSeconds));
+	}
+
+	/**
+	 * Sets the length of time before timing out when looking for an object on the
+	 * page. This method uses Milliseconds
+	 * 
+	 * @param driver
+	 * @param timeoutLengthInMillis
+	 */
+	protected static void setTimeout(WebDriver driver, long timeoutLengthInMillis) {
+		driver.manage().timeouts().implicitlyWait(Duration.ofMillis(timeoutLengthInMillis));
 	}
 
 	/**
