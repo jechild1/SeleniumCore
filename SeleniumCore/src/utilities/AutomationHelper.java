@@ -1,5 +1,10 @@
 package utilities;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.testng.Reporter;
@@ -122,7 +127,7 @@ public class AutomationHelper extends CoreConfig {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Method to cause the script to pause for a given amount of time, as indicated
 	 * by the passed in parameter.
@@ -139,6 +144,96 @@ public class AutomationHelper extends CoreConfig {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Adjusts a wait time to a very short time, e.g. 100 milli seconds.
+	 */
+	public static void adjustWaitTimeToVeryShort() {
+		setTimeout(driver, MICRO_TIMEOUT_MILLIS);
+	}
+
+	/**
+	 * Adjusts a wait time to a very short time, e.g. 3 seconds.
+	 */
+	public static void adjustWaitTimeToShort() {
+		setTimeout(driver, SHORT_TIMEOUT);
+	}
+
+	/**
+	 * Adjusts a wait time to a very short time, e.g. 20 seconds.
+	 */
+	public static void adjustWaitTimeToNormal() {
+		setTimeout(driver, NORMAL_TIMEOUT);
+
+	}
+
+	/**
+	 * Removes instances of tab, new line, return and space in the string
+	 * 
+	 * @param originalString
+	 * @return String
+	 */
+	public static String removeMarkupFromString(String originalString) {
+		return originalString.replaceAll("[\\t\\n\\r\\s\\u00A0]+", " ").trim();
+	}
+
+	/**
+	 * Method that accepts a locator to find a WebElement. If it finds at least one,
+	 * it returns true.
+	 * 
+	 * @param locator e.g. By.xpath("//table")
+	 * @return boolean.
+	 */
+	public static boolean isWebElementPresent(By locator) {
+		AutomationHelper.printMethodName();
+
+		boolean itemFound = false;
+
+		AutomationHelper.adjustWaitTimeToShort();
+		List<WebElement> theWebElement = driver.findElements(locator);
+		AutomationHelper.adjustWaitTimeToNormal();
+
+		if (theWebElement.size() > 0) {
+			itemFound = true;
+		}
+
+		return itemFound;
+	}
+	
+	public static void waitForObjectToDisappear(By locator, long waitTimeInSeconds, boolean throwEx) {
+		
+		AutomationHelper.printMethodName();
+		
+		//Convert seconds to millis
+		long waitTimeInMillis = waitTimeInSeconds * 1000;
+		
+		
+		long startTime = System.currentTimeMillis();
+		List<WebElement> objectList = new ArrayList<WebElement>();
+		long currentElapsedTime;
+		boolean objectPresent = true;
+		
+		do {
+			
+			
+			AutomationHelper.adjustWaitTimeToShort();
+			objectList = driver.findElements(locator);
+			AutomationHelper.adjustWaitTimeToNormal();
+			currentElapsedTime = (System.currentTimeMillis() - startTime) ;
+			
+			//If we don't find the object, it's gone
+			if(objectList.size() == 0) {
+				objectPresent = false;
+				break;
+			}
+			
+		}while((currentElapsedTime < waitTimeInMillis));
+		
+		if(throwEx && objectPresent) {
+			throw new NoSuchElementException("Waited for the element " + locator + " to disappear, but it did not.");
+			
+		}		
 	}
 
 }
