@@ -200,40 +200,54 @@ public class AutomationHelper extends CoreConfig {
 
 		return itemFound;
 	}
-	
-	public static void waitForObjectToDisappear(By locator, long waitTimeInSeconds, boolean throwEx) {
-		
+
+	/**
+	 * Returns if a WebElement is Enabled or not. The WebElement can exist in the
+	 * DOM, but if it is not interactable and enabled, it will return false.
+	 * 
+	 * @param locator
+	 * @return boolean
+	 */
+	public static boolean isWebElementEnabled(By locator) {
 		AutomationHelper.printMethodName();
-		
-		//Convert seconds to millis
+
+		WebElement currentWebElement = driver.findElement(locator);
+
+		return currentWebElement.isEnabled() ? true : false;
+
+	}
+
+	public static void waitForObjectToDisappear(By locator, long waitTimeInSeconds, boolean throwEx) {
+
+		AutomationHelper.printMethodName();
+
+		// Convert seconds to millis
 		long waitTimeInMillis = waitTimeInSeconds * 1000;
-		
-		
+
 		long startTime = System.currentTimeMillis();
 		List<WebElement> objectList = new ArrayList<WebElement>();
 		long currentElapsedTime;
 		boolean objectPresent = true;
-		
+
 		do {
-			
-			
+
 			AutomationHelper.adjustWaitTimeToShort();
 			objectList = driver.findElements(locator);
 			AutomationHelper.adjustWaitTimeToNormal();
-			currentElapsedTime = (System.currentTimeMillis() - startTime) ;
-			
-			//If we don't find the object, it's gone
-			if(objectList.size() == 0) {
+			currentElapsedTime = (System.currentTimeMillis() - startTime);
+
+			// If we don't find the object, it's gone
+			if (objectList.size() == 0) {
 				objectPresent = false;
 				break;
 			}
-			
-		}while((currentElapsedTime < waitTimeInMillis));
-		
-		if(throwEx && objectPresent) {
+
+		} while ((currentElapsedTime < waitTimeInMillis));
+
+		if (throwEx && objectPresent) {
 			throw new NoSuchElementException("Waited for the element " + locator + " to disappear, but it did not.");
-			
-		}		
+
+		}
 	}
 
 }
