@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.CannotProceedException;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.NotFoundException;
 import org.openqa.selenium.WebDriver;
@@ -27,15 +28,16 @@ public class DiTables extends CoreConfig {
 	public DiTables(WebElement tableReference) {
 		table = tableReference;
 	}
-	
+
 	/**
-	 * Clicks the Delete / Trash Can icon table row with that matches value 1 and value 2.
+	 * Clicks the Delete / Trash Can icon table row with that matches value 1 and
+	 * value 2. Note: This method will wait on the page to load each time.
 	 * 
 	 * @param rowValueOne
 	 * @param linkText
 	 */
 	public void clickDeleteInRow(String rowValueOne) {
-		Reporter.log("Beginning Delete click for row " + rowValueOne  + ".", true);
+		Reporter.log("Beginning Delete click for row " + rowValueOne + ".", true);
 
 		WebElement myRow = null;
 
@@ -59,7 +61,7 @@ public class DiTables extends CoreConfig {
 
 		WebElement trashCan = myRow.findElement(By.xpath("//span[@class = 'anticon anticon-delete']"));
 		trashCan.click();
-		
+
 		waitForPageToLoad();
 
 		Reporter.log("Trash can icon clicked for row " + rowValueOne + ".", true);
@@ -290,7 +292,7 @@ public class DiTables extends CoreConfig {
 		link.click();
 
 		// Allow a moment for the page to load.
-		//TODO - This can perhaps be improved upon.
+		// TODO - This can perhaps be improved upon.
 		AutomationHelper.waitSeconds(2);
 	}
 
@@ -371,14 +373,25 @@ public class DiTables extends CoreConfig {
 	 * @return boolean - returns true if found; false if not found.
 	 */
 	public boolean isRowInTableByValue(String primaryColumnHeader, String primaryColumnValue) {
+		int rowIndex;
+		do {
 
-		Reporter.log(String.format("Beginning isRowInTable search for '%s' in column '%s'.", primaryColumnValue,
-				primaryColumnHeader), true);
+			// Print in logs both the table search criteria and the table page
+			Reporter.log(String.format("Beginning isRowInTable search for '%s' in column '%s'.", primaryColumnValue,
+					primaryColumnHeader), true);
+			Reporter.log("Currently on table page: " + getPagination().getPaginationPageNumber(), true);
 
-		// Get CellIndex for Primary column Header
-		int primaryColIndex = getColumnIndex(primaryColumnHeader, false);
-		// Get the rowIndex for the row in the primary column.
-		int rowIndex = getRowIndex(primaryColIndex, primaryColumnValue, false);
+			// Get CellIndex for Primary column Header
+			int primaryColIndex = getColumnIndex(primaryColumnHeader, false);
+			// Get the rowIndex for the row in the primary column.
+			rowIndex = getRowIndex(primaryColIndex, primaryColumnValue, false);
+
+			// Click the next arrow and look again.
+			if (getPagination().isPaginationPresent()) {
+				getPagination().clickNextPagination();
+			}
+
+		} while (rowIndex == -1 && getPagination().isPaginationPresent());
 
 		// return true if rowindex is greater than -1 (not found)
 		return rowIndex > -1;
@@ -505,7 +518,7 @@ public class DiTables extends CoreConfig {
 
 		// Do not throw an exception here. We want to return a null so that pagination
 		// can exist inside the project, e.g. SW2Tables.
-		
+
 //		// IF we didn't find a row, rowToClick is null and we need to throw an
 //		// exception.
 //		if (rowToClick == null) {
@@ -623,7 +636,7 @@ public class DiTables extends CoreConfig {
 		if (tHeads.size() > 0) {
 
 			for (WebElement x : tHeads) {
-				
+
 				String tHeadText = AutomationHelper.removeMarkupFromString(x.getText());
 
 				if (columnName.equalsIgnoreCase(tHeadText)) {
@@ -785,6 +798,8 @@ public class DiTables extends CoreConfig {
 		// Get a list of ALL of the table cells
 		AutomationHelper.adjustWaitTimeToShort();
 		List<WebElement> tableCells = table.findElements(By.tagName("td"));
+//		List<WebElement> tableCells = table.findElements(By.xpath("//table//th | //table//td"));
+
 		AutomationHelper.adjustWaitTimeToNormal();
 
 		// Get a list of all of the table cells that have a cellIndex
@@ -792,7 +807,10 @@ public class DiTables extends CoreConfig {
 		List<WebElement> cellsInPrimaryCol = new ArrayList<WebElement>();
 
 		for (WebElement currentCell : tableCells) {
-			if (Integer.valueOf(currentCell.getAttribute("cellIndex")) == primaryColumnHeaderIndex) {
+			int currentCellIndex = Integer.valueOf(currentCell.getAttribute("cellIndex"));
+			// TODO - Delete next line. Just for testing.
+			String currentCellText = currentCell.getText();
+			if (currentCellIndex == primaryColumnHeaderIndex) {
 				cellsInPrimaryCol.add(currentCell);
 			}
 		}
@@ -805,10 +823,12 @@ public class DiTables extends CoreConfig {
 		// primary column value, then take the rowIndex for that cell.
 		for (WebElement currentCell : cellsInPrimaryCol) {
 
+			String currentCellText = currentCell.getText().trim();
+
 			// The method below used to use .equals, but changed to .matches
 			// so that dates such as 12/15/2018 09:56 can be accounted for
 			// without using time (send wild card)
-			if (currentCell.getText().trim().matches(primaryColumnValue.trim())) {
+			if (currentCellText.matches(primaryColumnValue.trim())) {
 				finalCellList.add(currentCell);
 			}
 		}
@@ -990,9 +1010,10 @@ public class DiTables extends CoreConfig {
 		return cellText;
 
 	}
-	
+
 	/**
-	 * Method to return all of the table rows within a given table. This does not count THEAD objects.
+	 * Method to return all of the table rows within a given table. This does not
+	 * count THEAD objects.
 	 * 
 	 * @return int
 	 */
@@ -1113,4 +1134,84 @@ public class DiTables extends CoreConfig {
 //		AutomationHelper.printMethodName();
 //		getSkipToPreviousNavigationLink().click();
 //	}
+
+	public Pagination getPagination() {
+		return new Pagination();
+	}
+
+	public class Pagination {
+
+		/**
+		 * Method to check for the presence of pagination. It does so by seeing if the >
+		 * button is disabled.
+		 * 
+		 * @return boolean
+		 */
+		public boolean isPaginationPresent() {
+
+			// Boolean to store if pagination is present
+			boolean paginationPresent;
+
+			// The > button for pagination is located in a span. We can get the span and
+			// then its parent.
+			WebElement rightNavButton = driver
+					.findElement(By.xpath("//span[@class = 'anticon anticon-right']/parent::button"));
+
+			// Get the disabled attribute of the button
+			String disabledAttribute = rightNavButton.getAttribute("disabled");
+
+			if (disabledAttribute == null) {
+				paginationPresent = true;
+			} else if (disabledAttribute.equals("true")) {
+				paginationPresent = false;
+			} else {
+				throw new ElementNotInteractableException(
+						"The attribute for the pagination arrow doesn't have expected properties.");
+			}
+
+//			if (disabledAttribute.equals("true")) {
+//				paginationPresent = false;
+//			} else {
+//				paginationPresent = true;
+//			}
+
+			return paginationPresent;
+
+		}
+
+		/**
+		 * Clicks the Next (right) button for pagination. Note: This method does not
+		 * check to see if the button is disabled.
+		 */
+		public void clickNextPagination() {
+			AutomationHelper.printMethodName();
+
+			WebElement rightNavButton = driver
+					.findElement(By.xpath("//span[@class = 'anticon anticon-right']/parent::button"));
+
+			rightNavButton.click();
+			waitForPageToLoad();
+
+		}
+
+		/**
+		 * Returns the active page of which table the user is on.
+		 * 
+		 * @return int the page number
+		 */
+		public int getPaginationPageNumber() {
+			AutomationHelper.printMethodName();
+
+			// Grab the container WebElement. The list items contains the text
+			// "item-active". We can pull the title property and get the page number
+			WebElement paginationContainer = driver.findElement(
+					By.xpath("//ul[@class = 'ant-pagination page_cont']/li[contains (@class,'item-active')]"));
+
+			int pageNumber = Integer.valueOf(paginationContainer.getAttribute("title"));
+
+			return pageNumber;
+
+		}
+	}
+
 }
