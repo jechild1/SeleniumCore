@@ -1,5 +1,8 @@
 package utilities;
 
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -102,6 +105,22 @@ public class AutomationHelper extends CoreConfig {
 	}
 
 	/**
+	 * Simulates an Escape key press and release on the keyboard.
+	 */
+	public static void hitEscape() {
+
+		Robot robot = null;
+		try {
+			robot = new Robot();
+			robot.keyPress(KeyEvent.VK_ESCAPE);
+			robot.keyRelease(KeyEvent.VK_ESCAPE);
+		} catch (AWTException e) {
+
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * Returns the Page Title.
 	 * 
 	 * @return String
@@ -135,8 +154,6 @@ public class AutomationHelper extends CoreConfig {
 	 * @paramtimeInMilliSeconds
 	 */
 	public static void waitMillis(int timeInMilliSeconds) {
-		// Convert to milliseconds
-//		timeInSeconds = timeInSeconds * 1000;
 
 		try {
 			Thread.sleep(timeInMilliSeconds);
@@ -151,6 +168,13 @@ public class AutomationHelper extends CoreConfig {
 	 */
 	public static void adjustWaitTimeToVeryShort() {
 		setTimeout(driver, MICRO_TIMEOUT_MILLIS);
+	}
+
+	/**
+	 * Adjusts a wait time to user specified time in seconds
+	 */
+	public static void adjustWaitTimeToUserSpecified(int seconds) {
+		setTimeout(driver, seconds);
 	}
 
 	/**
@@ -202,6 +226,32 @@ public class AutomationHelper extends CoreConfig {
 	}
 
 	/**
+	 * Method that accepts a locator to find a WebElement. If it finds at least one,
+	 * it returns true. This method also accepts the length of time that it will
+	 * wait for the presence of the element in seconds.
+	 * 
+	 * 
+	 * @param locator e.g. By.xpath("//table")
+	 * @param seconds
+	 * @return boolean.
+	 */
+	public static boolean isWebElementPresent(By locator, int seconds) {
+		AutomationHelper.printMethodName();
+
+		boolean itemFound = false;
+
+		AutomationHelper.adjustWaitTimeToUserSpecified(seconds);
+		List<WebElement> theWebElement = driver.findElements(locator);
+		AutomationHelper.adjustWaitTimeToNormal();
+
+		if (theWebElement.size() > 0) {
+			itemFound = true;
+		}
+
+		return itemFound;
+	}
+
+	/**
 	 * Returns if a WebElement is Enabled or not. The WebElement can exist in the
 	 * DOM, but if it is not interactable and enabled, it will return false.
 	 * 
@@ -216,6 +266,7 @@ public class AutomationHelper extends CoreConfig {
 		return currentWebElement.isEnabled() ? true : false;
 
 	}
+	
 
 	public static void waitForObjectToDisappear(By locator, long waitTimeInSeconds, boolean throwEx) {
 
@@ -249,5 +300,4 @@ public class AutomationHelper extends CoreConfig {
 
 		}
 	}
-
 }
