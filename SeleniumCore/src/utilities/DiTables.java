@@ -59,7 +59,7 @@ public class DiTables extends CoreConfig {
 			throw new RuntimeException("Cannot click link. There are no rows found in the table for " + rowValueOne);
 		}
 
-		WebElement trashCan = myRow.findElement(By.xpath("//span[@class = 'anticon anticon-delete']"));
+		WebElement trashCan = myRow.findElement(By.xpath("//*[name()='svg' and contains (@data-icon,'delete') ]"));
 		trashCan.click();
 
 		waitForPageToLoad();
@@ -373,7 +373,7 @@ public class DiTables extends CoreConfig {
 	 * @return boolean - returns true if found; false if not found.
 	 */
 	public boolean isRowInTableByValue(String primaryColumnHeader, String primaryColumnValue) {
-		int rowIndex;
+		int rowIndex = -1;
 		do {
 
 			// Print in logs both the table search criteria and the table page
@@ -387,7 +387,7 @@ public class DiTables extends CoreConfig {
 			rowIndex = getRowIndex(primaryColIndex, primaryColumnValue, false);
 
 			// Click the next arrow and look again.
-			if (getPagination().isPaginationPresent()) {
+			if (getPagination().isPaginationPresent() && rowIndex == -1) {
 				getPagination().clickNextPagination();
 			}
 
@@ -1168,15 +1168,7 @@ public class DiTables extends CoreConfig {
 				throw new ElementNotInteractableException(
 						"The attribute for the pagination arrow doesn't have expected properties.");
 			}
-
-//			if (disabledAttribute.equals("true")) {
-//				paginationPresent = false;
-//			} else {
-//				paginationPresent = true;
-//			}
-
 			return paginationPresent;
-
 		}
 
 		/**
