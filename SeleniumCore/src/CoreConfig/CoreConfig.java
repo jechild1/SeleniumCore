@@ -106,7 +106,7 @@ public abstract class CoreConfig {
 		String selectedBrowser = getSelectedBrowser();
 
 		// Default browser in string if not user selected from xml test suite file.
-		selectedBrowser = selectedBrowser != null ? selectedBrowser : "chrome";
+		selectedBrowser = selectedBrowser != null ? selectedBrowser : "firefox";
 
 		// Switch statement to go through each browser and set properties, if need be.
 		// See archived core classes for options, if need be.
@@ -124,17 +124,13 @@ public abstract class CoreConfig {
 			
 			
 			HashMap<String, Object> edgePrefs = new HashMap<String, Object>();
-			edgePrefs.put("profile.default_content_settings.popups", 0);
-			edgePrefs.put("profile.default_content_setting_values.notifications", 2);		
-			edgePrefs.put("profile.default_content_setting_values.automatic_downloads" , 1);		
+			edgePrefs.put("profile.default_content_settings.popups",0);
+			edgePrefs.put("profile.default_content_setting_values.notifications",2);		
+			edgePrefs.put("profile.default_content_setting_values.automatic_downloads" ,1);		
 			edgePrefs.put("profile.content_settings.pattern_pairs.*,*.multiple-automatic-downloads",1);
+			
 			EdgeOptions egdeOptions = new EdgeOptions();
 			egdeOptions.setExperimentalOption("prefs",edgePrefs);
-			
-			
-			
-			
-			
 			
 			WebDriverManager.edgedriver().setup();
 			driver = new EdgeDriver(egdeOptions);
@@ -148,6 +144,7 @@ public abstract class CoreConfig {
 		case "firefox":
 			WebDriverManager.firefoxdriver().setup();
 			driver = new FirefoxDriver();
+			break;
 			
 		default:
 			WebDriverManager.firefoxdriver().setup();
@@ -216,7 +213,7 @@ public abstract class CoreConfig {
 			for (int i = 0; i < NORMAL_TIMEOUT; i++) {
 				AutomationHelper.waitSeconds(1);
 
-				if (js.executeScript("return.document.readystate").toString().equals("complete")) {
+				if (js.executeScript("return document.readyState").toString().equals("complete")) {
 					Reporter.log("The page '" + AutomationHelper.getPageTitle() + "' is fully loaded now. /n"
 							+ "It took " + i + " seconds to load.", true);
 

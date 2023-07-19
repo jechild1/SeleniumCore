@@ -61,8 +61,18 @@ public class DiTables extends CoreConfig {
 
 		WebElement trashCan = myRow.findElement(By.xpath("//*[name()='svg' and contains (@data-icon,'delete') ]"));
 		trashCan.click();
+		
+		
+		
 
 		waitForPageToLoad();
+		
+		
+		//CODE TO GO HERE TO WAIT ON MESSAGE TO APPEAR AND DISAPPEAR
+		AutomationHelper.waitForObjectToDisappear(By.xpath("//span[text() = 'File Deleted']"), 5, true);
+		
+		waitForPageToLoad();
+
 
 		Reporter.log("Trash can icon clicked for row " + rowValueOne + ".", true);
 	}
