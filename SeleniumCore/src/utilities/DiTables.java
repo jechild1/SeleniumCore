@@ -84,34 +84,43 @@ public class DiTables extends CoreConfig {
 	 * @param rowValueOne
 	 * @param linkText
 	 */
-	public void clickLinkInRow(String rowValueOne, String linkText) {
-		Reporter.log("Beginning link click for row " + rowValueOne + " and link title " + linkText + ".", true);
+	public void clickLinkInRow(String primaryColumnHeader, String linkText) {
+		
+		
+		int rowIndex = -1;
+		int primaryColIndex = -1;
+		do {
 
-		WebElement myRow = null;
+			// Print in logs both the table search criteria and the table page
+			Reporter.log(String.format("Beginning click Link In Row search for '%s' in column '%s'.", linkText,
+					primaryColumnHeader), true);
+			Reporter.log("Currently on table page: " + getPagination().getPaginationPageNumber(), true);
 
-		// Create a list of table rows
-		List<WebElement> tableRows = table.findElements(By.tagName("tr"));
-
-		// Loop through all the table rows to find the row containing the value
-		// 1 and value 2 combination.
-		for (WebElement currentRow : tableRows) {
-			if (currentRow.getText().trim().contains(rowValueOne)) {
-				myRow = currentRow;
-				break;
+			// Get CellIndex for Primary column Header
+			primaryColIndex = getColumnIndex(primaryColumnHeader, false);
+			
+			
+			// Get the rowIndex for the row in the primary column.
+			rowIndex = getRowIndex(primaryColIndex, linkText, false);
+			
+			
+			// Click the next arrow and look again.
+			if (getPagination().isPaginationPresent() && rowIndex == -1) {
+				getPagination().clickNextPagination();
 			}
-		}
 
-		// If we did not find a row, we should throw an exception and not
-		// process further.
-		if (myRow == null) {
-			throw new RuntimeException("Cannot click link. There are no rows found in the table for " + rowValueOne);
-		}
-
-		WebElement link = myRow.findElement(By.linkText(linkText));
+		} while (rowIndex == -1 && getPagination().isPaginationPresent());
+		
+		//If the row index is NOT -1, then we found the object and can click it.
+		
+		WebElement tableCell = getCell(rowIndex, primaryColIndex, true);
+		
+		WebElement link = tableCell.findElement(By.xpath("//p"));
+		
 		link.click();
+		
 
-		Reporter.log("Link " + linkText + " clicked for row " + rowValueOne + ".", true);
-		Reporter.log("", true);
+		Reporter.log("Link " + linkText + " clicked for row " + rowIndex + ".", true);
 	}
 
 	/**

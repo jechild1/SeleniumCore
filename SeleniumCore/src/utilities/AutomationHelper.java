@@ -210,7 +210,6 @@ public class AutomationHelper extends CoreConfig {
 	 * @return boolean.
 	 */
 	public static boolean isWebElementPresent(By locator) {
-		AutomationHelper.printMethodName();
 
 		boolean itemFound = false;
 
