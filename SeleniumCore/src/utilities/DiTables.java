@@ -19,14 +19,31 @@ import CoreConfig.CoreConfig;
 public class DiTables extends CoreConfig {
 
 	public WebElement table;
+	public String tableXpath;
 
 	/**
 	 * Initialize Tables with table WebElement
 	 * 
 	 * @param tableReference
 	 */
-	public DiTables(WebElement tableReference) {
-		table = tableReference;
+	public DiTables(String tableXpath) {
+//		table = tableReference;
+		
+		this.tableXpath = tableXpath;
+		
+		List<WebElement> tableList = driver.findElements(By.xpath(tableXpath));
+
+		if (tableList.size() == 0) {
+			throw new NoSuchElementException(
+					"The table does not exist on the page. Ensure that there is a table present on the page.");
+		}
+		
+		table = tableList.get(0);		
+
+	}
+	
+	private void getNewTableReference() {
+		this.table = driver.findElement(By.xpath(tableXpath));
 	}
 
 	/**
@@ -107,6 +124,12 @@ public class DiTables extends CoreConfig {
 			// Click the next arrow and look again.
 			if (getPagination().isPaginationPresent() && rowIndex == -1) {
 				getPagination().clickNextPagination();
+				
+				waitForPageToLoad();
+				getNewTableReference();
+
+				
+				
 			}
 
 		} while (rowIndex == -1 && getPagination().isPaginationPresent());
